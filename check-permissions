@@ -1,0 +1,58 @@
+#!/bin/bash
+
+target=$PWD
+dir_permission=755
+file_permission=644
+fix_permissions=0
+
+function usage() {
+  if [ -n "$1" ]; then
+    echo -e "\033[0;31m  $1\033[0m\n";
+  fi
+  echo "Usage: $0 [-t target] [-d dir-permission] [-f file-permission] [--fix-it]"
+  echo "  -t, --target            Target directory"
+  echo "  -d, --dir-permission    Set directory permission"
+  echo "  -f, --file-permission   Set file permission"
+  echo "  --fix-permissions       Fix permissions"
+  echo ""
+  echo "Example: $0 --target /home/user --dir-permission 755 --file-permission 644 --fix-it"
+  exit 1
+}
+function find() {
+  local target=$1
+  local permission=$2
+  local type=$3
+
+  command find "${target}" ! -perm "${permission}" -type "${type}" -printf "Name="%p" Perm="%M/%m" Owner="%u":"%g\\n
+}
+
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+      -t|--target) target="$2"; shift;shift;;
+      -d|--dir-permission) dir_permission="$2"; shift;shift;;
+      -f|--file-permission) file_permission="$2"; shift;shift;;
+      --fix-it) fix_permissions=1; shift;;
+      *) echo -e "\033[0;31mUnknown parameter passed: $1\033[0m"; shift; shift;;
+  esac
+done
+if [[ ! -f "$target" && ! -d "$target" ]]; then usage "--target: Is not a file or directory"; fi;
+if [[ ! $dir_permission =~ ^[0-7]{3}$ ]]; then usage "--dir-permission: The value must be valid numeric notation per Linux permissions"; fi;
+if [[ ! $dir_permission =~ ^[0-7]{3}$ ]]; then usage "--file-permission: The value must be valid numeric notation per Linux permissions"; fi;
+
+echo "Target: $target"
+echo "Directory permissions: $dir_permission"
+echo "File permissions: $file_permission"
+if [[ $fix_permissions -eq 1 ]]; then
+  echo "Fix permissions after check: Yes"
+  else
+  echo "Fix permissions after check: No"
+fi;
+
+echo 'Incorrect Permission Directories:'
+find $target $dir_permission d
+echo 'Incorrect Permission Files:'
+find $target $file_permission f
+if [[ $fix_permissions -eq 1 ]]; then
+  command find "$target" -type d -exec chmod "$dir_permission" {} \;
+  command find "$target" -type f -exec chmod "$file_permission" {} \;
+fi
