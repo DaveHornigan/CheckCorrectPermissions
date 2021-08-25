@@ -13,7 +13,7 @@ function usage() {
   echo "  -t, --target            Target directory"
   echo "  -d, --dir-permission    Set directory permission"
   echo "  -f, --file-permission   Set file permission"
-  echo "  --fix-permissions       Fix permissions"
+  echo "  --fix-it       Fix permissions"
   echo ""
   echo "Example: $0 --target /home/user --dir-permission 755 --file-permission 644 --fix-it"
   exit 1
